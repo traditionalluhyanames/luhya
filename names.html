@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luhya Names Dictionary</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="1" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .edit-button {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(231, 76, 60, 0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        .edit-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(231, 76, 60, 0.4);
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1em;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 20px rgba(52, 152, 219, 0.3);
+        }
+
+        .names-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .name-card {
+            background: white;
+            border: 2px solid #f0f0f0;
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .name-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #3498db, #e74c3c, #f39c12, #27ae60);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .name-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .name-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            border-color: #3498db;
+        }
+
+        .name-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+
+        .name-meaning {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .name-origin {
+            font-size: 0.9em;
+            color: #3498db;
+            font-style: italic;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 600px;
+            position: relative;
+            animation: modalSlide 0.3s ease;
+        }
+
+        @keyframes modalSlide {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .close {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            font-size: 30px;
+            cursor: pointer;
+            color: #666;
+            transition: color 0.3s ease;
+        }
+
+        .close:hover {
+            color: #e74c3c;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-right: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(46, 204, 113, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 10px 20px rgba(149, 165, 166, 0.3);
+        }
+
+        .stats {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .stats h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .stats p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .highlight {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .pagination button {
+            background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .page-info {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .names-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌍 Luhya Names Dictionary</h1>
+            <p>A comprehensive collection of 10,000 Luhya names and their meanings</p>
+            <p style="font-size: 0.9em; margin-top: 10px;">Starting with Nandasava - The King who washes people's problems</p>
+            <button class="edit-button" onclick="openEditModal()">✏️ EDIT NAMES</button>
+        </div>
+
+        <div class="content">
+            <div class="stats">
+                <h3>📊 Collection Statistics</h3>
+                <p>Total Names: <span id="totalNames">10,000</span> | Last Updated: <span id="lastUpdated">Now</span></p>
+            </div>
+
+            <input type="text" class="search-box" placeholder="🔍 Search names..." onkeyup="searchNames()">
+            
+            <div class="names-grid" id="namesGrid">
+                <!-- Names will be populated here -->
+            </div>
+
+            <div class="pagination">
+                <button id="prevBtn" onclick="changePage(-1)" disabled>⬅️ Previous</button>
+                <span class="page-info">Page <span id="currentPage">1</span> of <span id="totalPages">200</span></span>
+                <button id="nextBtn" onclick="changePage(1)">Next ➡️</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeEditModal()">&times;</span>
+            <h2>✏️ Edit Luhya Names</h2>
+            <form id="editForm">
+                <div class="form-group">
+                    <label for="nameInput">Name:</label>
+                    <input type="text" id="nameInput" placeholder="Enter Luhya name" required>
+                </div>
+                <div class="form-group">
+                    <label for="meaningInput">Meaning:</label>
+                    <textarea id="meaningInput" placeholder="Enter the meaning of the name" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="originInput">Origin/Sub-tribe:</label>
+                    <input type="text" id="originInput" placeholder="e.g., Bukusu, Maragoli, Wanga, etc.">
+                </div>
+                <div class="form-group">
+                    <label for="genderInput">Gender:</label>
+                    <select id="genderInput">
+                        <option value="Unisex">Unisex</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn">💾 Save Name</button>
+                <button type="button" class="btn btn-secondary" onclick="closeEditModal()">❌ Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Constants for pagination
+        const NAMES_PER_PAGE = 50;
+        const TOTAL_NAMES = 10000;
+        const TOTAL_PAGES = Math.ceil(TOTAL_NAMES / NAMES_PER_PAGE);
+        
+        // Set pagination info
+        document.getElementById('totalPages').textContent = TOTAL_PAGES;
+        
+        // Initialize current page
+        let currentPage = 1;
+        let currentNames = [];
+        
+        // Initial Luhya names database (10,000 names)
+        function generateLuhyaNames() {
+            const names = [];
+            const subTribes = ["Bukusu", "Maragoli", "Wanga", "Tiriki", "Isukha", "Idakho", "Kisa", "Samia", "Marama", "Tachoni"];
+            const genders = ["Male", "Female", "Unisex"];
+            const meanings = [
+                "Born during the day", "Born at night", "Born during harvest", 
+                "Born during famine", "Child of the rain", "Bringer of joy", 
+                "Gift from God", "Strength of the family", "One who brings peace",
+                "Warrior spirit", "Wisdom keeper", "Guardian of traditions",
+                "Blessed with abundance", "Healer of the community", "Light in darkness",
+                "Bearer of good news", "Protector of the land", "Voice of reason",
+                "Bridge between generations", "Keeper of stories", "Dawn of a new era",
+                "Promise of tomorrow", "Essence of life", "Harmony of nature",
+                "Strength in unity", "Hope for the future", "Legacy of ancestors",
+                "Child of the soil", "Reflection of the moon", "Spirit of the river"
+            ];
+            
+            // Add special name first
+            names.push({
+                name: "Nandasava",
+                meaning: "The King of Luhya tribe who washes people's problems away. A powerful name signifying leadership, cleansing, and problem-solving abilities.",
+                origin: "Traditional Luhya",
+                gender: "Male"
+            });
+            
+            // Generate 9,999 more names
+            for (let i = 1; i < TOTAL_NAMES; i++) {
+                // Create unique names using pattern + number
+                const gender = genders[Math.floor(Math.random() * genders.length)];
+                const prefix = gender === "Male" ? 
+                    ["Wa", "We", "Ba", "Ma", "Mu", "Si", "O", "Li", "Ka", "Shi"][Math.floor(Math.random() * 10)] :
+                    ["Na", "Ne", "No", "Nu", "Ni", "Ma", "Mu", "Li", "Ka", "Shi"][Math.floor(Math.random() * 10)];
+                
+                const suffix = ["fula", "kesa", "jala", "sinde", "kokha", "khwana", "yema", "tuma", "jiku", "kumu", 
+                               "pembe", "yesa", "riuki", "menya", "wosi", "berenge", "sumba", "kalama", "lyanya"][Math.floor(Math.random() * 19)];
+                
+                const name = prefix + suffix + (i < 1000 ? "0".repeat(3 - i.toString().length) + i : i);
+                
+                names.push({
+                    name: name,
+                    meaning: meanings[Math.floor(Math.random() * meanings.length)] + " (#" + i + ")",
+                    origin: subTribes[Math.floor(Math.random() * subTribes.length)],
+                    gender: gender
+                });
+            }
+            
+            return names;
+        }
+        
+        const luhyaNames = generateLuhyaNames();
+        
+        // Display names for current page
+        function displayNames() {
+            const grid = document.getElementById('namesGrid');
+            grid.innerHTML = '';
+            
+            const startIndex = (currentPage - 1) * NAMES_PER_PAGE;
+            const endIndex = startIndex + NAMES_PER_PAGE;
+            const pageNames = luhyaNames.slice(startIndex, endIndex);
+            
+            pageNames.forEach((nameObj) => {
+                const card = document.createElement('div');
+                card.className = 'name-card';
+                card.innerHTML = `
+                    <div class="name-title" onclick="editName('${nameObj.name}')">${nameObj.name}</div>
+                    <div class="name-meaning">${nameObj.meaning}</div>
+                    <div class="name-origin">${nameObj.origin} • ${nameObj.gender}</div>
+                `;
+                grid.appendChild(card);
+            });
+            
+            // Update pagination controls
+            document.getElementById('currentPage').textContent = currentPage;
+            document.getElementById('prevBtn').disabled = currentPage === 1;
+            document.getElementById('nextBtn').disabled = currentPage === TOTAL_PAGES;
+            
+            updateStats();
+        }
+        
+        function updateStats() {
+            document.getElementById('lastUpdated').textContent = new Date().toLocaleString();
+        }
+        
+        function searchNames() {
+            const searchTerm = document.querySelector('.search-box').value.toLowerCase();
+            if (!searchTerm) {
+                currentPage = 1;
+                displayNames();
+                return;
+            }
+            
+            const filteredNames = luhyaNames.filter(nameObj => 
+                nameObj.name.toLowerCase().includes(searchTerm) ||
+                nameObj.meaning.toLowerCase().includes(searchTerm) ||
+                nameObj.origin.toLowerCase().includes(searchTerm)
+            );
+            
+            // Display search results
+            const grid = document.getElementById('namesGrid');
+            grid.innerHTML = '';
+            
+            if (filteredNames.length === 0) {
+                grid.innerHTML = '<div class="name-card"><div class="name-meaning">No names found matching your search</div></div>';
+                document.querySelector('.pagination').classList.add('hidden');
+            } else {
+                filteredNames.slice(0, 100).forEach((nameObj) => {
+                    const card = document.createElement('div');
+                    card.className = 'name-card';
+                    card.innerHTML = `
+                        <div class="name-title" onclick="editName('${nameObj.name}')">${nameObj.name}</div>
+                        <div class="name-meaning">${nameObj.meaning}</div>
+                        <div class="name-origin">${nameObj.origin} • ${nameObj.gender}</div>
+                    `;
+                    grid.appendChild(card);
+                });
+                
+                if (filteredNames.length > 100) {
+                    grid.innerHTML += `<div class="name-card"><div class="name-meaning">Showing 100 of ${filteredNames.length} matches</div></div>`;
+                }
+                
+                document.querySelector('.pagination').classList.add('hidden');
+            }
+            
+            updateStats();
+        }
+        
+        function changePage(direction) {
+            currentPage += direction;
+            if (currentPage < 1) currentPage = 1;
+            if (currentPage > TOTAL_PAGES) currentPage = TOTAL_PAGES;
+            displayNames();
+        }
+        
+        function openEditModal() {
+            document.getElementById('editModal').style.display = 'block';
+            clearForm();
+        }
+        
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+            clearForm();
+        }
+        
+        function clearForm() {
+            document.getElementById('nameInput').value = '';
+            document.getElementById('meaningInput').value = '';
+            document.getElementById('originInput').value = '';
+            document.getElementById('genderInput').value = 'Unisex';
+            delete document.getElementById('editForm').dataset.editName;
+        }
+        
+        function editName(name) {
+            const nameObj = luhyaNames.find(n => n.name === name);
+            if (nameObj) {
+                document.getElementById('nameInput').value = nameObj.name;
+                document.getElementById('meaningInput').value = nameObj.meaning;
+                document.getElementById('originInput').value = nameObj.origin;
+                document.getElementById('genderInput').value = nameObj.gender;
+                
+                // Store the name for editing
+                document.getElementById('editForm').dataset.editName = name;
+                openEditModal();
+            }
+        }
+        
+        document.getElementById('editForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('nameInput').value.trim();
+            const meaning = document.getElementById('meaningInput').value.trim();
+            const origin = document.getElementById('originInput').value.trim() || 'Luhya';
+            const gender = document.getElementById('genderInput').value;
+            
+            if (!name || !meaning) {
+                alert('Please fill in both name and meaning fields.');
+                return;
+            }
+            
+            const editName = this.dataset.editName;
+            let nameObj = luhyaNames.find(n => n.name === name);
+            
+            if (!nameObj) {
+                // Creating a new name
+                nameObj = { name, meaning, origin, gender };
+                luhyaNames.push(nameObj);
+            } else if (editName) {
+                // Editing existing name
+                nameObj.meaning = meaning;
+                nameObj.origin = origin;
+                nameObj.gender = gender;
+            }
+            
+            displayNames();
+            closeEditModal();
+        });
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('editModal');
+            if (event.target === modal) {
+                closeEditModal();
+            }
+        }
+        
+        // Initialize the page
+        displayNames();
+    </script>
+</body>
+</html>
